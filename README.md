@@ -1,8 +1,8 @@
-Language: MATLAB 
-IDE: MATLAB R2016b
-
 # Grid2PlaceModel
 Keyword: Grid cell, Place cell, Continuous attractor network, Competitive learning
+
+Language: MATLAB 
+IDE: MATLAB R2016b
 
 These are grid cell models and place cell models.
 

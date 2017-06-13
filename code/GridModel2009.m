@@ -2,7 +2,7 @@
 % (2012) Eric A. Zilli - Models of grid cell spatial firing published 2005¨C2011
 % faustmeow based on eric zilli
 %% Initialization
-clear; close all; clc;
+clear; close all; clc; % use 'pack' in the server
 %% To save the variables for FigureAttractorWeights:
 % % run after a simulation:
 % Bu09_full_netsyn = reshape((W*s')',sqrt(ncells),[]);
@@ -31,11 +31,11 @@ clear; close all; clc;
 % figure; imagesc(Bu09_north_act);    title('Bu09_north_act');
 % save Bu09_WeightFigure_vars.mat Bu09_full_netsyn Bu09_full_act Bu09_bump_netsyn Bu09_bump_act Bu09_n1_netsyn Bu09_n1_act Bu09_north_netsyn Bu09_north_act
 %% Simulation parameters
-livePlot = 80; % each livePlot/2 ms refresh figures of the simulation
-usePeriodicNetwork = 1; % if =0, aperiodic network. if =1, periodic network.
+livePlot = 40; % each livePlot/2 ms refresh figures of the simulation
+usePeriodicNetwork = 0; % if =0, aperiodic network. if =1, periodic network.
 
 useRealTrajectory = 1;  % if =0, just constant velocity. if =1, load trajectory
-constantVelocity = 0.5*[0.1; 0.1]; % m/s
+constantVelocity = 0*[0.1; 0.1]; % m/s
 
 useCurrentW = 0; % if W exists in namespace, use it instead of loading/generating
 loadWIfPossible = 1; % note that generating W is very slooow, so good for saving it
@@ -71,7 +71,7 @@ t = 0; % simulation time variable, ms
 %% Initial conditions
 s = rand(1,ncells); % activation of each cell
 %% Firing field plot variables
-watchCell = ncells/2-sqrt(ncells)/2; % which cell's spatial activity will be plotted?
+watchCell = ncells/2-sqrt(ncells)/2; % plot which cell spatial activity
 nSpatialBins = 60; % circle 180cm, so we set 60 bins, each bin is 3*3cm
 minx = -0.90; maxx = 0.90; % m
 miny = -0.90; maxy = 0.90; % m
@@ -79,7 +79,7 @@ occupancy = zeros(nSpatialBins);
 spikes = zeros(nSpatialBins);
 spikeCoords = [];
 
-% watchCell = ncells/2-sqrt(ncells)/2; % which cell's spatial activity will be plotted?
+% watchCell = ncells/2-sqrt(ncells)/2; % plot which cell spatial activity
 % nSpatialBins = 100;  % 100 cm * 100cm, so we set 100 bins, each bin is 1*1cm
 % minx = -0.50; maxx = 0.50; % m
 % miny = -0.50; maxy = 0.50; % m
@@ -122,25 +122,27 @@ if ~(useCurrentW && exist('W','var'))
       end
       if usePeriodicNetwork
         clear squaredShiftLengths;
-        % follow Guanella et al 2007's approach to the periodic distance function
+        % follow Guanella et al 2007's approach to the periodic distance revised by zilli
+        % produce an untwisted torus (a periodic network) - 3d ring with triangular pattern 
+        % but the bump spacing must be consistent with the size of the torus
         shifts = repmat(x(:,i),1,ncells) - x - ell*dirVects;
-        squaredShiftLengths(1,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(1,:) = shifts(1,:).^2 + shifts(2,:).^2; % +(0,0)
         shifts = repmat(x(:,i),1,ncells) - x - sqrt(ncells)*[ones(1,ncells); zeros(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(2,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(2,:) = shifts(1,:).^2 + shifts(2,:).^2; % +(-1,0)
         shifts = repmat(x(:,i),1,ncells) - x + sqrt(ncells)*[ones(1,ncells); zeros(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(3,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(3,:) = shifts(1,:).^2 + shifts(2,:).^2; % +(1,0)
         shifts = repmat(x(:,i),1,ncells) - x - sqrt(ncells)*[zeros(1,ncells); ones(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(4,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(4,:) = shifts(1,:).^2 + shifts(2,:).^2; % +(0,-1)
         shifts = repmat(x(:,i),1,ncells) - x + sqrt(ncells)*[zeros(1,ncells); ones(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(5,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(5,:) = shifts(1,:).^2 + shifts(2,:).^2; % (0,1)
         shifts = repmat(x(:,i),1,ncells) - x + sqrt(ncells)*[ones(1,ncells); ones(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(6,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(6,:) = shifts(1,:).^2 + shifts(2,:).^2; % (1,1)
         shifts = repmat(x(:,i),1,ncells) - x + sqrt(ncells)*[-1*ones(1,ncells); ones(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(7,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(7,:) = shifts(1,:).^2 + shifts(2,:).^2; % (-1,1)
         shifts = repmat(x(:,i),1,ncells) - x + sqrt(ncells)*[ones(1,ncells); -1*ones(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(8,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(8,:) = shifts(1,:).^2 + shifts(2,:).^2; % (1,-1)
         shifts = repmat(x(:,i),1,ncells) - x + sqrt(ncells)*[-1*ones(1,ncells); -1*ones(1,ncells)] - ell*dirVects;
-        squaredShiftLengths(9,:) = shifts(1,:).^2 + shifts(2,:).^2;
+        squaredShiftLengths(9,:) = shifts(1,:).^2 + shifts(2,:).^2; % (-1,-1)
         
         % Select respective least distances:
         squaredShiftLengths = min(squaredShiftLengths);
@@ -164,9 +166,9 @@ if usePeriodicNetwork
   A = ones(size(cellDists));
 else
   % Aperiodic
-  R = sqrt(ncells)/2; % radius of main network, in cell-position units
+  R = sqrt(ncells)/2;   % radius of main network, in cell-position units
   a0 = sqrt(ncells)/32; % envelope fall-off rate
-  dr = sqrt(ncells)/2; % radius of tapered region, in cell-position units
+  dr = sqrt(ncells)/2;  % radius of tapered region, in cell-position units
   A = exp(-a0*(((cellDists)-R+dr)/dr).^2);
   nonTaperedInds = find(cellDists < (R-dr));
   A(nonTaperedInds) = 1;
@@ -222,7 +224,7 @@ while t<simdur
   % speed(tind) = sqrt(v(1)^2+v(2)^2);%/dt; % m/s
 
   % Feedforward input
-  B = A.*(1+alpha*dirVects'*v)';
+  B = A.*(1+alpha*dirVects'*v)'; 
   
   % Total synaptic driving currents
   sInputs = (W*s')' + B;
